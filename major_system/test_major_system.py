@@ -1,4 +1,4 @@
-import major_system as ms
+from major_system import major_system as ms
 import pytest
 
 @pytest.fixture
@@ -15,6 +15,18 @@ def test_partitions():
   assert ms.partitions("a") == [["a"]]
   assert ms.partitions("ab") == [["ab"], ["a", "b"]]
   assert ms.partitions("abc") == [["abc"], ["a", "bc"], ["ab", "c"], ["a", "b", "c"]]
+  assert ms.partitions("abcd") == [["abcd"], ["a", "bcd"], ["ab", "cd"], ["abc", "d"], ["a", "b", "cd"], ["a", "bc", "d"], ["ab", "c", "d"], ["a", "b", "c", "d"]]
+  assert ms.partitions("a", 0) == []
+  assert ms.partitions("ab", 1) == [["ab"]]
+  assert ms.partitions("abc", 0) == []
+  assert ms.partitions("abc", 1) == [["abc"]]
+  assert ms.partitions("abc", 2) == [["abc"], ["a", "bc"], ["ab", "c"]]
+  assert ms.partitions("abc", 3) == [["abc"], ["a", "bc"], ["ab", "c"], ["a", "b", "c"]]
+  assert ms.partitions("abc", 4) == [["abc"], ["a", "bc"], ["ab", "c"], ["a", "b", "c"]]
+  assert ms.partitions("abc", 5) == [["abc"], ["a", "bc"], ["ab", "c"], ["a", "b", "c"]]
+  assert ms.partitions("abc", 6) == [["abc"], ["a", "bc"], ["ab", "c"], ["a", "b", "c"]]
+  assert ms.partitions("abc", 7) == [["abc"], ["a", "bc"], ["ab", "c"], ["a", "b", "c"]]
+  assert ms.partitions("abc", None) == [["abc"], ["a", "bc"], ["ab", "c"], ["a", "b", "c"]]
   assert ms.partitions("abcd") == [["abcd"], ["a", "bcd"], ["ab", "cd"], ["abc", "d"], ["a", "b", "cd"], ["a", "bc", "d"], ["ab", "c", "d"], ["a", "b", "c", "d"]]
 
 

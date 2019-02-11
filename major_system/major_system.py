@@ -6,7 +6,7 @@ import itertools
 import collections
 
 __doc__ = """
-Usage: {} [--dict=<filename>] <number>...
+Usage: {} [options] <number>...
 
 <number>...                Numbers to turn into words
                            If -, take <number>... from STDIN.
@@ -14,13 +14,15 @@ Usage: {} [--dict=<filename>] <number>...
 Options:
   -d, --dict=<filename>    Dictionary file to use
                            [DEFAULT: /usr/share/dict/words]
+  -m, --max-words=<number> Maximum number of words to split into
+                           [DEFAULT: 3]
 """.format(sys.argv[0])
 
 from docopt import docopt
 
 
-def numeric_partitions(number):
-  for partition in partitions(str(number)):
+def numeric_partitions(number, max_partitions):
+  for partition in partitions(str(number), max_partitions):
     yield [int(x) for x in partition]
 
 
@@ -73,8 +75,8 @@ def phrases_from_partition(dictfile, partition):
     yield " ".join(tup)
 
 
-def phrases(dictfile, number):
-  for numeric_partition in numeric_partitions(number):
+def phrases(dictfile, number, max_words):
+  for numeric_partition in numeric_partitions(number, max_words):
     print(numeric_partition)
     for phrase in phrases_from_partition(dictfile, numeric_partition):
       yield phrase
@@ -90,7 +92,7 @@ def ordered_tuples(tuple_length, num_elts):
         yield tup + (i,)
 
 
-def partitions(arr):
+def partitions(arr, max_partitions=None):
   num_elts = len(arr)
   # length 1
   to_return = [[arr]]
@@ -112,7 +114,7 @@ def main():
   with open(args['--dict'], 'r') as dictfile:
     for number in args['<number>']:
       print("{}:".format(number))
-      for phrase in phrases(dictfile, int(number)):
+      for phrase in phrases(dictfile, int(number), args['--max-words']):
         print("  " + phrase.strip())
 
 
