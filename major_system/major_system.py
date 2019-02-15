@@ -75,7 +75,7 @@ def phrases_from_partition(dictfile, partition):
     yield " ".join(tup)
 
 
-def phrases(dictfile, number, max_words):
+def phrases(dictfile, number, max_words=None):
   for numeric_partition in numeric_partitions(number, max_words):
     print(numeric_partition)
     for phrase in phrases_from_partition(dictfile, numeric_partition):
@@ -93,11 +93,22 @@ def ordered_tuples(tuple_length, num_elts):
 
 
 def partitions(arr, max_partitions=None):
+  has_max = False
+  try:
+    has_max = True
+    max_partitions = int(max_partitions)
+  except (TypeError, ValueError) as e:
+    has_max = False
+
+  if has_max and max_partitions < 1:
+    return []
   num_elts = len(arr)
   # length 1
   to_return = [[arr]]
   # higher lengths
   for partition_length in range(2, num_elts + 1):
+    if has_max and partition_length > max_partitions:
+      continue
     tuple_length = partition_length - 1
     for tup in ordered_tuples(tuple_length, num_elts):
       partition = []

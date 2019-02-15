@@ -81,3 +81,28 @@ def test_phrases(dictfile):
     'at ick yell', 'at ick well', 'what ick yell',
     'what ick well',
   ])
+  phrases = [x for x in ms.phrases(dictfile, 15, 1)]
+  assert phrases == [
+    'tall', 'deal',
+  ]
+  phrases = [x for x in ms.phrases(dictfile, 175, 3)]
+  assert set(phrases) == set([
+    'toggle',
+    'dog yell', 'dog well', 'tag yell', 'tag well',
+    'at gill', 'at gal', 'what gill', 'what gal',
+    'at ick yell', 'at ick well', 'what ick yell',
+    'what ick well',
+  ])
+  phrases = [x for x in ms.phrases(dictfile, 175, 2)]
+  assert set(phrases) == set([
+    'toggle',
+    'dog yell', 'dog well', 'tag yell', 'tag well',
+    'at gill', 'at gal', 'what gill', 'what gal',
+  ])
+  phrases = [x for x in ms.phrases(dictfile, 175, 1)]
+  assert set(phrases) == set([
+    'toggle',
+  ])
+  phrases = [x for x in ms.phrases(dictfile, 175, 0)]
+  assert set(phrases) == set([
+  ])
