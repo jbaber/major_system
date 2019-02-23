@@ -14,8 +14,10 @@ Usage: {} [options] <number>...
 Options:
   -d, --dict=<filename>    Dictionary file to use
                            [DEFAULT: /usr/share/dict/words]
-  -m, --max-words=<number> Maximum number of words to split into
+  -M, --max-words=<number> Maximum number of words to split into
                            [DEFAULT: 3]
+  -m, --min-words=<number> Minimum number of words to split into
+                           [DEFAULT: 1]
 """.format(sys.argv[0])
 
 from docopt import docopt
@@ -75,7 +77,7 @@ def phrases_from_partition(dictfile, partition):
     yield " ".join(tup)
 
 
-def phrases(dictfile, number, max_words=None):
+def phrases(dictfile, number, max_words=None, min_words=None):
   for numeric_partition in numeric_partitions(number, max_words):
     print(numeric_partition)
     for phrase in phrases_from_partition(dictfile, numeric_partition):
@@ -125,7 +127,8 @@ def main():
   with open(args['--dict'], 'r') as dictfile:
     for number in args['<number>']:
       print("{}:".format(number))
-      for phrase in phrases(dictfile, int(number), args['--max-words']):
+      for phrase in phrases(dictfile, int(number), args['--max-words'],
+          args['--min-words']):
         print("  " + phrase.strip())
 
 
