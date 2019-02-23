@@ -16,6 +16,7 @@ Options:
                            [DEFAULT: /usr/share/dict/words]
   -m, --max-words=<number> Maximum number of words to split into
                            [DEFAULT: 3]
+  -v, --version            Show version
 """.format(sys.argv[0])
 
 from docopt import docopt
@@ -121,7 +122,7 @@ def partitions(arr, max_partitions=None):
 
 
 def main():
-  args = docopt(__doc__)
+  args = docopt(__doc__, version='1.1.1')
   with open(args['--dict'], 'r') as dictfile:
     for number in args['<number>']:
       print("{}:".format(number))
