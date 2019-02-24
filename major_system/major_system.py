@@ -22,11 +22,6 @@ Options:
 from docopt import docopt
 
 
-def numeric_partitions(number, max_partitions):
-  for partition in partitions(str(number), max_partitions):
-    yield [int(x) for x in partition]
-
-
 def regex_component(i):
   if i == 0:
     return r'[sSzZ]+'
@@ -76,10 +71,13 @@ def phrases_from_partition(dictfile, partition):
     yield " ".join(tup)
 
 
-def phrases(dictfile, number, max_words=None):
-  for numeric_partition in numeric_partitions(number, max_words):
-    print(numeric_partition)
-    for phrase in phrases_from_partition(dictfile, numeric_partition):
+def phrases(dictfile, number, max_words=None, *, verbosity=2):
+  for partition in partitions(number, max_words):
+    if verbosity > 1:
+      for part in partition[:-1]:
+        print(part, end=", ")
+      print(partition[-1])
+    for phrase in phrases_from_partition(dictfile, partition):
       yield phrase
 
 
@@ -94,6 +92,7 @@ def ordered_tuples(tuple_length, num_elts):
 
 
 def partitions(arr, max_partitions=None):
+  arr = str(arr)
   has_max = False
   try:
     has_max = True
@@ -122,11 +121,11 @@ def partitions(arr, max_partitions=None):
 
 
 def main():
-  args = docopt(__doc__, version='1.1.1')
+  args = docopt(__doc__, version='1.1.2')
   with open(args['--dict'], 'r') as dictfile:
     for number in args['<number>']:
       print("{}:".format(number))
-      for phrase in phrases(dictfile, int(number), args['--max-words']):
+      for phrase in phrases(dictfile, number, args['--max-words']):
         print("  " + phrase.strip())
 
 
