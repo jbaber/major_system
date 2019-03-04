@@ -73,8 +73,8 @@ def phrases_from_partition(dictfile, partition):
     yield " ".join(tup)
 
 
-def phrases(dictfile, number, max_words=None, *, verbosity=2):
-  for partition in partitions(number, max_words):
+def phrases(dictfile, number, max_words=None, min_words=None, *, verbosity=2):
+  for partition in partitions(number, max_words, min_words):
     if verbosity > 1:
       for part in partition[:-1]:
         print(part, end=", ")
@@ -93,7 +93,7 @@ def ordered_tuples(tuple_length, num_elts):
         yield tup + (i,)
 
 
-def partitions(arr, max_partitions=None):
+def partitions(arr, max_partitions=None, min_partitions=None):
   arr = str(arr)
   has_max = False
   try:
@@ -101,15 +101,28 @@ def partitions(arr, max_partitions=None):
     max_partitions = int(max_partitions)
   except (TypeError, ValueError) as e:
     has_max = False
+  has_min = False
+  try:
+    has_min = True
+    min_partitions = int(min_partitions)
+  except (TypeError, ValueError) as e:
+    has_min = False
 
   if has_max and max_partitions < 1:
     return []
+  if has_min and has_max and min_partitions > max_partitions:
+    return []
   num_elts = len(arr)
+
+  to_return = []
   # length 1
-  to_return = [[arr]]
+  if not (has_min and min_partitions > 1):
+    to_return = [[arr]]
   # higher lengths
   for partition_length in range(2, num_elts + 1):
     if has_max and partition_length > max_partitions:
+      continue
+    if has_min and partition_length < min_partitions:
       continue
     tuple_length = partition_length - 1
     for tup in ordered_tuples(tuple_length, num_elts):
@@ -123,7 +136,7 @@ def partitions(arr, max_partitions=None):
 
 
 def main():
-  args = docopt(__doc__, version='1.1.2')
+  args = docopt(__doc__, version='1.2.0')
   with open(args['--dict'], 'r') as dictfile:
     for number in args['<number>']:
       print("{}:".format(number))
