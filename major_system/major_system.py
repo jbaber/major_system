@@ -5,6 +5,8 @@ import re
 import itertools
 import collections
 
+DEFAULT_DICT_FILENAME = "/usr/share/dict/words"
+
 __doc__ = """
 Usage: {} [options] <number>...
 
@@ -13,13 +15,13 @@ Usage: {} [options] <number>...
 
 Options:
   -d, --dict=<filename>    Dictionary file to use
-                           [DEFAULT: /usr/share/dict/words]
+                           [DEFAULT: {}]
   -M, --max-words=<number> Maximum number of words to split into
                            [DEFAULT: 3]
   -m, --min-words=<number> Minimum number of words to split into
                            [DEFAULT: 1]
   -v, --version            Show version
-""".format(sys.argv[0])
+""".format(sys.argv[0], DEFAULT_DICT_FILENAME)
 
 from docopt import docopt
 
@@ -136,13 +138,22 @@ def partitions(arr, max_partitions=None, min_partitions=None):
 
 
 def main():
-  args = docopt(__doc__, version='1.2.0')
-  with open(args['--dict'], 'r') as dictfile:
-    for number in args['<number>']:
-      print("{}:".format(number))
-      for phrase in phrases(dictfile, number, args['--max-words'],
-          args['--min-words']):
-        print("  " + phrase.strip())
+  args = docopt(__doc__, version='1.2.1')
+  dict_filename = args['--dict']
+  try:
+    with open(dict_filename, 'r') as dictfile:
+      for number in args['<number>']:
+        print("{}:".format(number))
+        for phrase in phrases(dictfile, number, args['--max-words'],
+            args['--min-words']):
+          print("  " + phrase.strip())
+  except FileNotFoundError as e:
+    print("Give a file full of words to the -d flag.")
+    if dict_filename == DEFAULT_DICT_FILENAME:
+      print("(The default location ('{}') doesn't exist "
+          "on your system.)".format(dict_filename))
+    else:
+      print("No file at '{}'.".format(dict_filename))
 
 
 if __name__ == "__main__":
