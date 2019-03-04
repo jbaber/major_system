@@ -26,6 +26,54 @@ Options:
 from docopt import docopt
 
 
+def arpabet_matches(number, phonemes):
+  phoneme_index = 0
+  phoneme_last_index = len(phonemes) - 1
+  for digit in number:
+    # More digits, no more phonemes
+    if phoneme_index > phoneme_last_index:
+      return False
+    cur_phoneme = phonemes[phoneme_index]
+    if cur_phoneme in arpabet_phonemes(digit):
+      phoneme_index += 1
+      continue
+    elif cur_phoneme in arpabet_phonemes(None):
+      phoneme_index += 1
+    else:
+      return False
+      
+
+
+def arpabet_phonemes(i):
+  if i == 0:
+    return ['S', 'Z']
+  if i == 1:
+    return ['T', 'D']
+  if i == 2:
+    return ['N']
+  if i == 3:
+    return ['M']
+  if i == 4:
+    return ['R', 'ER0', 'ER1', 'ER2']
+  if i == 5:
+    return ['L']
+  if i == 6:
+    return ['SH', 'JH', 'CH', 'ZH']
+  if i == 7:
+    return ['K', 'G']
+  if i == 8:
+    return ['F', 'V']
+  if i == 9:
+    return ['P', 'B']
+  if i == None:
+    return [AA, AA0, AA1, AA2, AE, AE0, AE1, AE2, AH, AH0, AH1, AH2, AO, AO0, AO1,
+    AO2, AW, AW0, AW1, AW2, AY, AY0, AY1, AY2, EH, EH0, EH1, EH2, ER, ER0,
+    ER1, ER2, EY, EY0, EY1, EY2, HH, IH, IH0, IH1, IH2, IY, IY0, IY1, IY2,
+    OW0, OW1, OW2, OY, OY0, OY1, OY2, UH, UH0, UH1, UH2, UW, UW0, UW1, UW2,
+    W, Y, Z,]
+  raise ValueError("Expected a single digit or None")
+
+
 def regex_component(i):
   if i == 0:
     return r'[sSzZ]+'
@@ -52,18 +100,20 @@ def regex_component(i):
   raise ValueError("Expected a single digit or None")
 
 
-def major_words(dictfile, number):
+def major_words(dictfile, number, phonetic_dictfile=False):
   # If it's something that can only be iterated through once (like a file
   # pointer), reset to the beginning again
   if isinstance(dictfile, collections.Iterator):
     dictfile.seek(0)
-  regex = r'^' + regex_component(None)
-  for character in str(number):
-    regex += regex_component(int(character)) + regex_component(None)
-  regex += r'$'
-  for line in dictfile:
-    if re.match(regex, line):
-      yield line.strip()
+
+  if not phonetic_dictfile:
+    regex = r'^' + regex_component(None)
+    for character in str(number):
+      regex += regex_component(int(character)) + regex_component(None)
+    regex += r'$'
+    for line in dictfile:
+      if re.match(regex, line):
+        yield line.strip()
 
 
 def phrases_from_partition(dictfile, partition):

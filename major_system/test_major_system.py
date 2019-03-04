@@ -65,6 +65,13 @@ def test_phrases_from_partition(dictfile):
     assert phrases == expected_phrases
 
 
+def test_arpabet_matches():
+  assert ms.arpabet_matches("56201", ['IH2', 'L', 'UW1', 'ZH', 'AH0', 'N', 'AH0', 'S', 'T'])
+  assert not ms.arpabet_matches("56201", ['IH2', 'L', 'UW1', 'ZH', 'AH0', 'N', 'AH0', 'S', 'T', 'S'])
+  assert ms.arpabet_matches("17", ['D', 'AH0', 'G'])
+  assert not ms.arpabet_matches("171", ['D', 'AH0', 'G'])
+
+
 def test_phrases(dictfile):
   for fifteen in [15, '15']:
     phrases = [x for x in ms.phrases(dictfile, fifteen)]
