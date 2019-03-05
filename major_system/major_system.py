@@ -30,18 +30,34 @@ def arpabet_matches(number, phonemes):
   phoneme_index = 0
   phoneme_last_index = len(phonemes) - 1
   for digit in number:
-    # More digits, no more phonemes
-    if phoneme_index > phoneme_last_index:
+    found_yet = False
+    while not found_yet:
+
+      # More digits, no more phonemes
+      if phoneme_index > phoneme_last_index:
+        return False
+
+      cur_phoneme = phonemes[phoneme_index]
+
+      # Found a phoneme matching `digit`
+      if cur_phoneme in arpabet_phonemes(int(digit)):
+        phoneme_index += 1
+        found_yet = True
+
+      # Found a phoneme that can be skipped
+      elif cur_phoneme in arpabet_phonemes(None):
+        phoneme_index += 1
+
+      # Found an unskippable phoneme that doesn't match `digit`
+      else:
+        return False
+
+  # Any remaining phonemes must be skippable
+  for phoneme in phonemes[phoneme_index:]:
+    if phoneme not in arpabet_phonemes(None):
       return False
-    cur_phoneme = phonemes[phoneme_index]
-    if cur_phoneme in arpabet_phonemes(digit):
-      phoneme_index += 1
-      continue
-    elif cur_phoneme in arpabet_phonemes(None):
-      phoneme_index += 1
-    else:
-      return False
-      
+
+  return True
 
 
 def arpabet_phonemes(i):
@@ -66,11 +82,13 @@ def arpabet_phonemes(i):
   if i == 9:
     return ['P', 'B']
   if i == None:
-    return [AA, AA0, AA1, AA2, AE, AE0, AE1, AE2, AH, AH0, AH1, AH2, AO, AO0, AO1,
-    AO2, AW, AW0, AW1, AW2, AY, AY0, AY1, AY2, EH, EH0, EH1, EH2, ER, ER0,
-    ER1, ER2, EY, EY0, EY1, EY2, HH, IH, IH0, IH1, IH2, IY, IY0, IY1, IY2,
-    OW0, OW1, OW2, OY, OY0, OY1, OY2, UH, UH0, UH1, UH2, UW, UW0, UW1, UW2,
-    W, Y, Z,]
+    return ['AA', 'AA0', 'AA1', 'AA2', 'AE', 'AE0', 'AE1', 'AE2', 'AH', 'AH0',
+        'AH1', 'AH2', 'AO', 'AO0', 'AO1', 'AO2', 'AW', 'AW0', 'AW1', 'AW2',
+        'AY', 'AY0', 'AY1', 'AY2', 'EH', 'EH0', 'EH1', 'EH2', 'ER', 'ER0',
+        'ER1', 'ER2', 'EY', 'EY0', 'EY1', 'EY2', 'HH', 'IH', 'IH0', 'IH1',
+        'IH2', 'IY', 'IY0', 'IY1', 'IY2', 'OW0', 'OW1', 'OW2', 'OY', 'OY0',
+        'OY1', 'OY2', 'UH', 'UH0', 'UH1', 'UH2', 'UW', 'UW0', 'UW1', 'UW2',
+        'W', 'Y', 'Z',]
   raise ValueError("Expected a single digit or None")
 
 
