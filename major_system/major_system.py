@@ -142,8 +142,6 @@ def major_words(dictfile, number, phonetic_dictfile=False):
       if line.startswith(';;;') or line.strip() == "":
         continue
       pieces = line.strip().split()
-      if pieces[0] == b'DOG':
-        import pdb; pdb.set_trace()
       if arpabet_matches(str(number), pieces[1:]):
         yield pieces[0]
   else:
