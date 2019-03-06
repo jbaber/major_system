@@ -229,7 +229,7 @@ def partitions(arr, max_partitions=None, min_partitions=None):
 
 
 def main():
-  args = docopt(__doc__, version='1.2.1')
+  args = docopt(__doc__, version='1.3.0')
   dict_filename = args['--dict']
   try:
     with open(dict_filename, 'r', encoding=args['--encoding']) as dictfile:
