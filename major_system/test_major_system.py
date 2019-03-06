@@ -32,6 +32,36 @@ def test_partitions():
 
 
 def test_major_words(dictfile):
+  with open("cmu_phonetic_dictionary/cmudict-0.7b", "r", encoding="latin-1") as f:
+    assert [x for x in ms.major_words(f, 17, True)] == [
+      'AD-HOC', 'ADACHI', 'ADAK', 'ADWEEK', 'ATCO', 'ATEK', 'ATICO',
+      'ATTACK', 'ATTIC', 'ATTICA', 'DAC', 'DACHAU', 'DACK', 'DAG',
+      'DAGG', 'DAGGY', 'DAGUE', 'DAK', 'DAK(1)', 'DAKE', 'DAYCO',
+      'DEAK', 'DEC', 'DECAY', 'DECCA', 'DECH', 'DECK', 'DECO', 'DECOU',
+      'DECOY', 'DEEG', 'DEGAS(1)', 'DEHECQ', 'DEIKE', 'DEKAY', 'DHAKA',
+      'DHAKA(1)', 'DHAKA(2)', 'DIC', 'DICK', 'DICKE', 'DICKEY', 'DICKIE',
+      'DICKY', 'DIECK', 'DIEGO', 'DIG', 'DIGGA', 'DIKE', 'DK', 'DOAK',
+      'DOC', 'DOCIE', 'DOCK', 'DOG', 'DOGGIE', 'DOGGY', 'DOIG', 'DOKE',
+      'DOKEY', 'DOOGIE', 'DOUG', 'DOUGIE', 'DUC', 'DUCA', 'DUCK', 'DUCKY',
+      'DUG', 'DUGO', 'DUGUAY', 'DUK', 'DUKE', 'DUQUE', 'DWECK', 'DYCK',
+      'DYCO', 'DYK', 'DYKE', 'EDICK', 'EYETECH', 'HADDOCK', 'HAJDUK',
+      'HAYDOCK', 'HAYDUK', 'HEADACHE', 'HEDTKE', 'HEDWIG', 'HEDWIGA',
+      'HETTICK', 'HIDEAKI', 'HIGH-TECH', 'HIGHTECH', 'HODAK', 'HOUDEK',
+      'HOWTEK', 'HUDAK', 'HUDEC', 'HUDEK', 'HUDOCK', 'HYDOCK', 'IDEC',
+      'INDICA', 'ITEK', 'ODAIKO', 'OUTGO', 'OUTTAKE(1)', 'PTAK', 'TAC',
+      'TACK', 'TACKE', 'TACKY', 'TACO', 'TAEGU', 'TAG', 'TAGG', 'TAGGE',
+      'TAGUE', 'TAIKO', 'TAK', 'TAKAO', 'TAKE', 'TAKEI', 'TAKEO',
+      'TAKI', 'TAKIHYO', 'TAKU', 'TALK', 'TALKIE', 'TALKY', 'TAUKE',
+      'TEAC', 'TEAC(1)', 'TEAGUE', 'TEAK', 'TEC', 'TECH', 'TECHIE',
+      'TECK', 'TECO', 'TEGGE', 'TEICH', 'TEIG', 'TEK', 'TIC', 'TICK',
+      'TIG', 'TIGHE', 'TIGUE', 'TIKE', 'TIKI', 'TOCCO', 'TOCK', 'TOGA',
+      'TOGO', 'TOKAI', 'TOKIO', 'TOKUO', 'TOKYO', 'TOKYU', 'TOOK',
+      'TOOKE', 'TOYKO', 'TUCK', 'TUCKEY', 'TUG', 'TUK', 'TWEAK', 'TWIG',
+      'TWIGG', 'TWIGGY', 'TWOHIG', 'TYCO', 'TYKE', 'T_A_C(1)', 'UDAGAWA',
+      'UTECH', 'UTICA', 'UTICA(1)', 'UTKE', 'UTTECH', 'WEDIG', 'WEIDIG',
+      'WEITEK', 'WIDICK', 'WITCO', 'WITTIG', 'WITTKE', 'WITUCKI',
+      'WOODKE', 'WUTTKE', 'YUTAKA',
+    ]
   assert [x for x in ms.major_words(dictfile, 17)] == ["dog", 'tag']
   assert [x for x in ms.major_words(dictfile, 175)] == ["toggle"]
   assert [x for x in ms.major_words(dictfile, 8)] == []
@@ -66,6 +96,8 @@ def test_phrases_from_partition(dictfile):
 
 
 def test_arpabet_matches():
+  assert not ms.arpabet_matches("17", ['D', 'AO1', 'G', 'Z'])
+  assert ms.arpabet_matches("17", ['D', 'AO1', 'G'])
   assert ms.arpabet_matches("56201", ['IH2', 'L', 'UW1', 'ZH', 'AH0', 'N', 'AH0', 'S', 'T'])
   assert not ms.arpabet_matches("56201", ['IH2', 'L', 'UW1', 'ZH', 'AH0', 'N', 'AH0', 'S', 'T', 'S'])
   assert ms.arpabet_matches("17", ['D', 'AH0', 'G'])

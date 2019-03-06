@@ -10,17 +10,23 @@ DEFAULT_DICT_FILENAME = "/usr/share/dict/words"
 __doc__ = """
 Usage: {} [options] <number>...
 
-<number>...                Numbers to turn into words
-                           If -, take <number>... from STDIN.
+<number>...                 Numbers to turn into words
+                            If -, take <number>... from STDIN.
 
 Options:
-  -d, --dict=<filename>    Dictionary file to use
-                           [DEFAULT: {}]
-  -M, --max-words=<number> Maximum number of words to split into
-                           [DEFAULT: 3]
-  -m, --min-words=<number> Minimum number of words to split into
-                           [DEFAULT: 1]
-  -v, --version            Show version
+  -d, --dict=<dictfile> Dictionary file to use
+                            [DEFAULT: {}]
+  -e, --encoding=<encoding> Encoding scheme of <dictfile>
+                            For example, the CMU phonetic dictionary
+                            needs 'latin-1'
+                            [DEFAULT: utf-8]
+  -p, --phonetic            Indicate <dictfile> is a phonetic dictionary
+                            formatted like the CMU phonetic dictionary
+  -M, --max-words=<number>  Maximum number of words to split into
+                            [DEFAULT: 3]
+  -m, --min-words=<number>  Minimum number of words to split into
+                            [DEFAULT: 1]
+  -v, --version             Show version
 """.format(sys.argv[0], DEFAULT_DICT_FILENAME)
 
 from docopt import docopt
@@ -84,11 +90,11 @@ def arpabet_phonemes(i):
   if i == None:
     return ['AA', 'AA0', 'AA1', 'AA2', 'AE', 'AE0', 'AE1', 'AE2', 'AH', 'AH0',
         'AH1', 'AH2', 'AO', 'AO0', 'AO1', 'AO2', 'AW', 'AW0', 'AW1', 'AW2',
-        'AY', 'AY0', 'AY1', 'AY2', 'EH', 'EH0', 'EH1', 'EH2', 'ER', 'ER0',
-        'ER1', 'ER2', 'EY', 'EY0', 'EY1', 'EY2', 'HH', 'IH', 'IH0', 'IH1',
+        'AY', 'AY0', 'AY1', 'AY2', 'EH', 'EH0', 'EH1', 'EH2',
+        'EY', 'EY0', 'EY1', 'EY2', 'HH', 'IH', 'IH0', 'IH1',
         'IH2', 'IY', 'IY0', 'IY1', 'IY2', 'OW0', 'OW1', 'OW2', 'OY', 'OY0',
         'OY1', 'OY2', 'UH', 'UH0', 'UH1', 'UH2', 'UW', 'UW0', 'UW1', 'UW2',
-        'W', 'Y', 'Z',]
+        'W', 'Y']
   raise ValueError("Expected a single digit or None")
 
 
@@ -119,12 +125,28 @@ def regex_component(i):
 
 
 def major_words(dictfile, number, phonetic_dictfile=False):
+  """
+  If `phonetic_dictfile`, expect `dictfile` to be formatted like the
+  [CMU phonetic dictionary](http://www.speech.cs.cmu.edu/cgi-bin/cmudict)
+  """
+
   # If it's something that can only be iterated through once (like a file
   # pointer), reset to the beginning again
   if isinstance(dictfile, collections.Iterator):
     dictfile.seek(0)
 
-  if not phonetic_dictfile:
+  if phonetic_dictfile:
+    for line in dictfile:
+
+      # Skip comments and blank lines
+      if line.startswith(';;;') or line.strip() == "":
+        continue
+      pieces = line.strip().split()
+      if pieces[0] == b'DOG':
+        import pdb; pdb.set_trace()
+      if arpabet_matches(str(number), pieces[1:]):
+        yield pieces[0]
+  else:
     regex = r'^' + regex_component(None)
     for character in str(number):
       regex += regex_component(int(character)) + regex_component(None)
@@ -134,22 +156,23 @@ def major_words(dictfile, number, phonetic_dictfile=False):
         yield line.strip()
 
 
-def phrases_from_partition(dictfile, partition):
+def phrases_from_partition(dictfile, partition, phonetic_dictfile=False):
   word_collection = []
   for part in partition:
-    words = major_words(dictfile, part)
+    words = major_words(dictfile, part, phonetic_dictfile)
     word_collection.append(words)
   for tup in itertools.product(*word_collection):
     yield " ".join(tup)
 
 
-def phrases(dictfile, number, max_words=None, min_words=None, *, verbosity=2):
+def phrases(dictfile, number, max_words=None, min_words=None, phonetic_dictfile=False, *, verbosity=2):
   for partition in partitions(number, max_words, min_words):
     if verbosity > 1:
       for part in partition[:-1]:
         print(part, end=", ")
       print(partition[-1])
-    for phrase in phrases_from_partition(dictfile, partition):
+    for phrase in phrases_from_partition(dictfile, partition,
+        phonetic_dictfile):
       yield phrase
 
 
@@ -209,11 +232,11 @@ def main():
   args = docopt(__doc__, version='1.2.1')
   dict_filename = args['--dict']
   try:
-    with open(dict_filename, 'r') as dictfile:
+    with open(dict_filename, 'r', encoding=args['--encoding']) as dictfile:
       for number in args['<number>']:
         print("{}:".format(number))
         for phrase in phrases(dictfile, number, args['--max-words'],
-            args['--min-words']):
+            args['--min-words'], args['--phonetic']):
           print("  " + phrase.strip())
   except FileNotFoundError as e:
     print("Give a file full of words to the -d flag.")
