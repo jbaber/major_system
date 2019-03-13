@@ -33,6 +33,7 @@ from docopt import docopt
 
 
 def arpabet_matches(number, phonemes):
+  number = str(number)
   phoneme_index = 0
   phoneme_last_index = len(phonemes) - 1
   for digit in number:
@@ -142,7 +143,7 @@ def major_words(dictfile, number, phonetic_dictfile=False):
       if line.startswith(';;;') or line.strip() == "":
         continue
       pieces = line.strip().split()
-      if arpabet_matches(str(number), pieces[1:]):
+      if arpabet_matches(number, pieces[1:]):
         yield pieces[0]
   else:
     regex = r'^' + regex_component(None)
