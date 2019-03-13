@@ -1,0 +1,3 @@
+- Include CMUdict as a resource and go to phonetic exclusively
+- Allow other phonetic mappings
+- Allow a .toml file for command line arguments
