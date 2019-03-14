@@ -6,7 +6,9 @@ import itertools
 import collections
 
 __doc__ = """
-Usage: {} [options] <number>...
+Usage: {0} [options] <number>...
+       {0} --version
+       {0} --cmudict
 
 <number>...                 Numbers to turn into words
                             If -, take <number>... from STDIN.
@@ -23,6 +25,9 @@ Options:
   -e, --encoding=<encoding>  Encoding scheme of <dictfile>
                              For example, the CMU phonetic dictionary
                              needs 'latin-1' [DEFAULT: utf-8]
+  -C, --cmudict              Send the entire included CMU phonetic dictionary
+                             to STDOUT.  Good for starting your own custom
+                             dictionary.
 """.format(sys.argv[0])
 
 
@@ -196,7 +201,13 @@ def partitions(arr, max_partitions=None, min_partitions=None):
 
 
 def main():
-  args = docopt(__doc__, version='2.0.0')
+  args = docopt(__doc__, version='2.1.0')
+
+  if args['--cmudict']:
+    import pkg_resources
+    print(pkg_resources.resource_string("major_system",
+        "cmu_phonetic_dictionary/cmudict-0.7b").decode('latin-1'))
+    exit(0)
 
   # TODO Add distinct encodings for blacklist and dictionary files
   encoding = args['--encoding']
