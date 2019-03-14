@@ -5,8 +5,6 @@ import re
 import itertools
 import collections
 
-DEFAULT_DICT_FILENAME = "/usr/share/dict/words"
-
 __doc__ = """
 Usage: {} [options] <number>...
 
@@ -14,20 +12,19 @@ Usage: {} [options] <number>...
                             If -, take <number>... from STDIN.
 
 Options:
-  -d, --dict=<dictfile>      Dictionary file to use [DEFAULT: {}]
-  -e, --encoding=<encoding>  Encoding scheme of <dictfile>
-                             For example, the CMU phonetic dictionary
-                             needs 'latin-1'
-                             [DEFAULT: utf-8]
-  -p, --phonetic             Indicate <dictfile> is a phonetic dictionary
-                             formatted like the CMU phonetic dictionary
+  -v, --version              Show version
   -M, --max-words=<number>   Maximum number of words to split into
                              [DEFAULT: 3]
   -m, --min-words=<number>   Minimum number of words to split into
                              [DEFAULT: 1]
   -b, --blacklist=<filename> File with a list of words to not use
-  -v, --version             Show version
-""".format(sys.argv[0], DEFAULT_DICT_FILENAME)
+  -d, --dict=<dictfile>      A custom phonetic dictionary (using the CMUdict
+                             format)
+  -e, --encoding=<encoding>  Encoding scheme of <dictfile>
+                             For example, the CMU phonetic dictionary
+                             needs 'latin-1' [DEFAULT: utf-8]
+""".format(sys.argv[0])
+
 
 from docopt import docopt
 
@@ -99,37 +96,7 @@ def arpabet_phonemes(i):
   raise ValueError("Expected a single digit or None")
 
 
-def regex_component(i):
-  if i == 0:
-    return r'[sSzZ]+'
-  if i == 1:
-    return r'[tTdD]+'
-  if i == 2:
-    return r'[nN]+'
-  if i == 3:
-    return r'[mM]+'
-  if i == 4:
-    return r'[rR]+'
-  if i == 5:
-    return r'[lL]+'
-  if i == 6:
-    return r'(j|J|sh|SH|ch|CH)'
-  if i == 7:
-    return r'[kKgGcC]+'
-  if i == 8:
-    return r'[fFvV]+'
-  if i == 9:
-    return r'[PpBb]+'
-  if i == None:
-    return r'[AaEeIiOoUuWwHhYy]*'
-  raise ValueError("Expected a single digit or None")
-
-
-def major_words(dictfile, number, phonetic_dictfile=False, blacklist=None):
-  """
-  If `phonetic_dictfile`, expect `dictfile` to be formatted like the
-  [CMU phonetic dictionary](http://www.speech.cs.cmu.edu/cgi-bin/cmudict)
-  """
+def major_words(dictfile, number, blacklist=None, *, encoding='utf-8'):
   if blacklist == None:
     blacklist = []
 
@@ -138,42 +105,32 @@ def major_words(dictfile, number, phonetic_dictfile=False, blacklist=None):
   if isinstance(dictfile, collections.Iterator):
     dictfile.seek(0)
 
-  if phonetic_dictfile:
-    for line in dictfile:
+  for line in dictfile:
+    line = line.decode(encoding)
 
-      # Skip comments and blank lines
-      if line.startswith(';;;') or line.strip() == "":
-        continue
-      pieces = line.strip().split()
-      if arpabet_matches(number, pieces[1:]):
-        if pieces[0] not in blacklist:
-          yield pieces[0]
-  else:
-    regex = r'^' + regex_component(None)
-    for character in str(number):
-      regex += regex_component(int(character)) + regex_component(None)
-    regex += r'$'
-    for line in dictfile:
-      if re.match(regex, line):
-        line = line.strip()
-        if line not in blacklist:
-          yield line
+    # Skip comments and blank lines
+    if line.startswith(';;;') or line.strip() == "":
+      continue
+    pieces = line.strip().split()
+    if arpabet_matches(number, pieces[1:]):
+      if pieces[0] not in blacklist:
+        yield pieces[0]
 
 
-def phrases_from_partition(dictfile, partition, phonetic_dictfile=False,
-    blacklist=None):
+def phrases_from_partition(dictfile, partition, blacklist=None, *,
+    encoding='utf-8'):
   if blacklist == None:
     blacklist = []
   word_collection = []
   for part in partition:
-    words = major_words(dictfile, part, phonetic_dictfile, blacklist)
+    words = major_words(dictfile, part, blacklist, encoding=encoding)
     word_collection.append(words)
   for tup in itertools.product(*word_collection):
     yield " ".join(tup)
 
 
-def phrases(dictfile, number, max_words=None, min_words=None, phonetic_dictfile=False,
-    blacklist=None, *, verbosity=2):
+def phrases(dictfile, number, max_words=None, min_words=None,
+    blacklist=None, *, verbosity=2, encoding='utf-8'):
   if blacklist == None:
     blacklist = []
   for partition in partitions(number, max_words, min_words):
@@ -181,8 +138,8 @@ def phrases(dictfile, number, max_words=None, min_words=None, phonetic_dictfile=
       for part in partition[:-1]:
         print(part, end=", ")
       print(partition[-1])
-    for phrase in phrases_from_partition(dictfile, partition,
-        phonetic_dictfile, blacklist):
+    for phrase in phrases_from_partition(dictfile, partition, blacklist,
+        encoding=encoding):
       yield phrase
 
 
@@ -239,40 +196,43 @@ def partitions(arr, max_partitions=None, min_partitions=None):
 
 
 def main():
-  args = docopt(__doc__, version='1.4.0')
-  dict_filename = args['--dict']
+  args = docopt(__doc__, version='2.0.0')
 
   # TODO Add distinct encodings for blacklist and dictionary files
   encoding = args['--encoding']
 
   # TODO Add an option to read the blacklist from disk instead of storing it
-  # all in memory (better for giant blacklists)
+  # all in memory (probably better for giant blacklists)
   blacklist = []
   blacklist_filename = args['--blacklist']
   if blacklist_filename != None:
     try:
       with open(blacklist_filename, 'r', encoding=encoding) as blacklist_file:
         blacklist = [line.strip() for line in blacklist_file]
-        print(blacklist)
-        exit(0)
     except FileNotFoundError as e:
       print("Give a file full of words to the -b flag.")
       print("No file named {} is readable.".format(blacklist_filename))
+      exit(1)
 
-  try:
-    with open(dict_filename, 'r', encoding=encoding) as dictfile:
-      for number in args['<number>']:
-        print("{}:".format(number))
-        for phrase in phrases(dictfile, number, args['--max-words'],
-            args['--min-words'], args['--phonetic'], blacklist):
-          print("  " + phrase.strip())
-  except FileNotFoundError as e:
-    print("Give a file full of words to the -d flag.")
-    if dict_filename == DEFAULT_DICT_FILENAME:
-      print("(The default location ('{}') doesn't exist "
-          "on your system.)".format(dict_filename))
-    else:
+  dict_filename = args['--dict']
+  if dict_filename != None:
+    try:
+      dictfile = open(dict_filename, 'r', encoding=encoding)
+    except FileNotFoundError as e:
+      print("Give a phonetic dictionary formatted like CMUdict to the -d flag.")
       print("No file at '{}'.".format(dict_filename))
+      exit(1)
+  else:
+    import pkg_resources
+    dictfile = pkg_resources.resource_stream("major_system",
+        "cmu_phonetic_dictionary/cmudict-0.7b")
+    encoding = 'latin-1'
+
+  for number in args['<number>']:
+    print("{}:".format(number))
+    for phrase in phrases(dictfile, number, args['--max-words'],
+        args['--min-words'], blacklist, encoding=encoding):
+      print("  " + phrase.strip())
 
 
 if __name__ == "__main__":
