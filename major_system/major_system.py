@@ -111,7 +111,8 @@ def major_words(dictfile, number, blacklist=None, *, encoding='utf-8'):
     dictfile.seek(0)
 
   for line in dictfile:
-    line = line.decode(encoding)
+    if isinstance(line, bytes):
+      line = line.decode(encoding)
 
     # Skip comments and blank lines
     if line.startswith(';;;') or line.strip() == "":
