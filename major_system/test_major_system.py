@@ -7,6 +7,35 @@ def dictfile():
       'what', 'tall', 'deal', 'gill', 'gal', 'ick', 'sail', 'sole',
       'seal']
 
+@pytest.fixture
+def phonetic_dictfile():
+  return [
+    'BABYSITTER  B EY1 B IY0 S IH2 T ER0',
+    'BABYSITTERS  B EY1 B IY0 S IH2 T ER0 Z',
+    'BABYSITTING  B EY1 B IY0 S IH2 T IH0 NG',
+    'BACA  B AE1 K AH0',
+    'BACALL  B AH0 K AO1 L',
+    'BACARDI  B AH0 K AA1 R D IY0',
+    'BACCALAUREATE  B AE2 K AH0 L AO1 R IY0 AH0 T',
+    'DON  D AA1 N',
+    'DAWN  D AO1 N',
+    'DAUN  D AO1 N',
+    'DUNFORD  D AH1 N F ER0 D',
+    'DUNG  D AH1 NG',
+    'DUNGAN  D AH1 NG G AH0 N',
+    'DUNGEON  D AH1 N JH AH0 N',
+    'DUNGEONS  D AH1 N JH AH0 N Z',
+    'DUNGEY  D AH1 N JH IY0',
+    'DUNHAM  D AH1 N AH0 M',
+    'DUNHILL  D AH1 N HH IH2 L',
+    'FUTONS  F UW1 T AA0 N Z',
+    'FUTRAL  F AH1 T R AH0 L',
+    'FUTRELL  F Y UW0 T R EH1 L',
+    'FUTTERMAN  F AH1 T ER0 M AH0 N',
+    'FUTURE  F Y UW1 CH ER0',
+  ]
+
+
 def assert_equal_except_order(left, right):
   assert len(left) == len(right)
   for i in left:
@@ -31,9 +60,9 @@ def test_partitions():
   assert ms.partitions("abcd") == [["abcd"], ["a", "bcd"], ["ab", "cd"], ["abc", "d"], ["a", "b", "cd"], ["a", "bc", "d"], ["ab", "c", "d"], ["a", "b", "c", "d"]]
 
 
-def test_major_words(dictfile):
+def test_major_words(dictfile, phonetic_dictfile):
   with open("cmu_phonetic_dictionary/cmudict-0.7b", "r", encoding="latin-1") as f:
-    assert [x for x in ms.major_words(f, 17, True)] == [
+    expected = [
       'AD-HOC', 'ADACHI', 'ADAK', 'ADWEEK', 'ATCO', 'ATEK', 'ATICO',
       'ATTACK', 'ATTIC', 'ATTICA', 'DAC', 'DACHAU', 'DACK', 'DAG',
       'DAGG', 'DAGGY', 'DAGUE', 'DAK', 'DAK(1)', 'DAKE', 'DAYCO',
@@ -62,6 +91,13 @@ def test_major_words(dictfile):
       'WEITEK', 'WIDICK', 'WITCO', 'WITTIG', 'WITTKE', 'WITUCKI',
       'WOODKE', 'WUTTKE', 'YUTAKA',
     ]
+    assert [x for x in ms.major_words(f, 17, True)] == expected
+
+  assert [x for x in ms.major_words(phonetic_dictfile, 12, True)] == ['DON', "DAWN", "DAUN"]
+  assert [x for x in ms.major_words(phonetic_dictfile, 12, True, ['DAWN'])] == ['DON', "DAUN"]
+  assert [x for x in ms.major_words(phonetic_dictfile, 12, True, ['DAWN', 'DON'])] == ["DAUN"]
+  assert [x for x in ms.major_words(phonetic_dictfile, 12, True, ['DAWN', 'DON', 'DAUN'])] == []
+
   assert [x for x in ms.major_words(dictfile, 17)] == ["dog", 'tag']
   assert [x for x in ms.major_words(dictfile, 175)] == ["toggle"]
   assert [x for x in ms.major_words(dictfile, 8)] == []

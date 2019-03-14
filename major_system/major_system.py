@@ -14,18 +14,18 @@ Usage: {} [options] <number>...
                             If -, take <number>... from STDIN.
 
 Options:
-  -d, --dict=<dictfile> Dictionary file to use
-                            [DEFAULT: {}]
-  -e, --encoding=<encoding> Encoding scheme of <dictfile>
-                            For example, the CMU phonetic dictionary
-                            needs 'latin-1'
-                            [DEFAULT: utf-8]
-  -p, --phonetic            Indicate <dictfile> is a phonetic dictionary
-                            formatted like the CMU phonetic dictionary
-  -M, --max-words=<number>  Maximum number of words to split into
-                            [DEFAULT: 3]
-  -m, --min-words=<number>  Minimum number of words to split into
-                            [DEFAULT: 1]
+  -d, --dict=<dictfile>      Dictionary file to use [DEFAULT: {}]
+  -e, --encoding=<encoding>  Encoding scheme of <dictfile>
+                             For example, the CMU phonetic dictionary
+                             needs 'latin-1'
+                             [DEFAULT: utf-8]
+  -p, --phonetic             Indicate <dictfile> is a phonetic dictionary
+                             formatted like the CMU phonetic dictionary
+  -M, --max-words=<number>   Maximum number of words to split into
+                             [DEFAULT: 3]
+  -m, --min-words=<number>   Minimum number of words to split into
+                             [DEFAULT: 1]
+  -b, --blacklist=<filename> File with a list of words to not use
   -v, --version             Show version
 """.format(sys.argv[0], DEFAULT_DICT_FILENAME)
 
@@ -125,11 +125,13 @@ def regex_component(i):
   raise ValueError("Expected a single digit or None")
 
 
-def major_words(dictfile, number, phonetic_dictfile=False):
+def major_words(dictfile, number, phonetic_dictfile=False, blacklist=None):
   """
   If `phonetic_dictfile`, expect `dictfile` to be formatted like the
   [CMU phonetic dictionary](http://www.speech.cs.cmu.edu/cgi-bin/cmudict)
   """
+  if blacklist == None:
+    blacklist = []
 
   # If it's something that can only be iterated through once (like a file
   # pointer), reset to the beginning again
@@ -144,7 +146,8 @@ def major_words(dictfile, number, phonetic_dictfile=False):
         continue
       pieces = line.strip().split()
       if arpabet_matches(number, pieces[1:]):
-        yield pieces[0]
+        if pieces[0] not in blacklist:
+          yield pieces[0]
   else:
     regex = r'^' + regex_component(None)
     for character in str(number):
@@ -152,26 +155,34 @@ def major_words(dictfile, number, phonetic_dictfile=False):
     regex += r'$'
     for line in dictfile:
       if re.match(regex, line):
-        yield line.strip()
+        line = line.strip()
+        if line not in blacklist:
+          yield line
 
 
-def phrases_from_partition(dictfile, partition, phonetic_dictfile=False):
+def phrases_from_partition(dictfile, partition, phonetic_dictfile=False,
+    blacklist=None):
+  if blacklist == None:
+    blacklist = []
   word_collection = []
   for part in partition:
-    words = major_words(dictfile, part, phonetic_dictfile)
+    words = major_words(dictfile, part, phonetic_dictfile, blacklist)
     word_collection.append(words)
   for tup in itertools.product(*word_collection):
     yield " ".join(tup)
 
 
-def phrases(dictfile, number, max_words=None, min_words=None, phonetic_dictfile=False, *, verbosity=2):
+def phrases(dictfile, number, max_words=None, min_words=None, phonetic_dictfile=False,
+    blacklist=None, *, verbosity=2):
+  if blacklist == None:
+    blacklist = []
   for partition in partitions(number, max_words, min_words):
     if verbosity > 1:
       for part in partition[:-1]:
         print(part, end=", ")
       print(partition[-1])
     for phrase in phrases_from_partition(dictfile, partition,
-        phonetic_dictfile):
+        phonetic_dictfile, blacklist):
       yield phrase
 
 
@@ -230,12 +241,30 @@ def partitions(arr, max_partitions=None, min_partitions=None):
 def main():
   args = docopt(__doc__, version='1.3.1')
   dict_filename = args['--dict']
+
+  # TODO Add distinct encodings for blacklist and dictionary files
+  encoding = args['--encoding']
+
+  # TODO Add an option to read the blacklist from disk instead of storing it
+  # all in memory (better for giant blacklists)
+  blacklist = []
+  blacklist_filename = args['--blacklist']
+  if blacklist_filename != None:
+    try:
+      with open(blacklist_filename, 'r', encoding=encoding) as blacklist_file:
+        blacklist = [line.strip() for line in blacklist_file]
+        print(blacklist)
+        exit(0)
+    except FileNotFoundError as e:
+      print("Give a file full of words to the -b flag.")
+      print("No file named {} is readable.".format(blacklist_filename))
+
   try:
-    with open(dict_filename, 'r', encoding=args['--encoding']) as dictfile:
+    with open(dict_filename, 'r', encoding=encoding) as dictfile:
       for number in args['<number>']:
         print("{}:".format(number))
         for phrase in phrases(dictfile, number, args['--max-words'],
-            args['--min-words'], args['--phonetic']):
+            args['--min-words'], args['--phonetic'], blacklist):
           print("  " + phrase.strip())
   except FileNotFoundError as e:
     print("Give a file full of words to the -d flag.")
