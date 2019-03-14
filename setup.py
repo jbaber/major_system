@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
   name = "major_system",
-  version = "1.3.1",
+  version = "1.4.0",
   author = "John Baber-Lucero",
   author_email = "pypi@frundle.com",
   description = ("Python libraries and scripts for converting numbers using the Mnemonic Major System"),

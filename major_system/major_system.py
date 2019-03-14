@@ -239,7 +239,7 @@ def partitions(arr, max_partitions=None, min_partitions=None):
 
 
 def main():
-  args = docopt(__doc__, version='1.3.1')
+  args = docopt(__doc__, version='1.4.0')
   dict_filename = args['--dict']
 
   # TODO Add distinct encodings for blacklist and dictionary files
