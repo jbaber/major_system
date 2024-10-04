@@ -1,0 +1,14 @@
+[project]
+name = "major_system"
+version = "2.2.0"
+description = "Python libraries and scripts for converting numbers using the Mnemonic Major System"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["docopt", "importlib_resources",]
+email = "fredregal@frundle.com"
+author = "John Baber-Lucero"
+license = "GPLv3"
+url = "https://github.com/jbaber/major_system"
+
+[project.scripts]
+major_words = "major_system.major_system:main"

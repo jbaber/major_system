@@ -4,6 +4,8 @@ import sys
 import re
 import itertools
 import collections
+from importlib_resources import files
+from importlib_resources import as_file
 
 __doc__ = """
 Usage: {0} [options] <number>...
@@ -205,9 +207,7 @@ def main():
   args = docopt(__doc__, version='2.1.0')
 
   if args['--cmudict']:
-    import pkg_resources
-    print(pkg_resources.resource_string("major_system",
-        "cmu_phonetic_dictionary/cmudict-0.7b").decode('latin-1'))
+    print(files("cmu_phonetic_dictionary").joinpath("cmudict-0.7b").read_text("latin-1"))
     exit(0)
 
   # TODO Add distinct encodings for blacklist and dictionary files
@@ -235,9 +235,7 @@ def main():
       print("No file at '{}'.".format(dict_filename))
       exit(1)
   else:
-    import pkg_resources
-    dictfile = pkg_resources.resource_stream("major_system",
-        "cmu_phonetic_dictionary/cmudict-0.7b")
+    dictfile = as_file(files("cmu_phonetic_dictionary").joinpath("cmudict-0.7b"))
     encoding = 'latin-1'
 
   for number in args['<number>']:
