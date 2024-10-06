@@ -1,5 +1,7 @@
 from major_system import major_system as ms
 import pytest
+from importlib_resources import files
+from importlib_resources import as_file
 
 @pytest.fixture
 def dictfile():
@@ -55,7 +57,8 @@ def test_partitions():
 
 
 def test_major_words(dictfile):
-  with open("cmu_phonetic_dictionary/cmudict-0.7b", "r", encoding="latin-1") as f:
+  source = files("major_system.cmu_phonetic_dictionary").joinpath("cmudict-0.7b")
+  with open(source, "r", encoding="latin-1") as f:
     expected = [
       'AD-HOC', 'ADACHI', 'ADAK', 'ADWEEK', 'ATCO', 'ATEK', 'ATICO',
       'ATTACK', 'ATTIC', 'ATTICA', 'DAC', 'DACHAU', 'DACK', 'DAG',

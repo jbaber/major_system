@@ -227,22 +227,23 @@ def main():
       exit(1)
 
   dict_filename = args['--dict']
-  if dict_filename != None:
-    try:
-      dictfile = open(dict_filename, 'r', encoding=encoding)
-    except FileNotFoundError as e:
-      print("Give a phonetic dictionary formatted like CMUdict to the -d flag.")
-      print("No file at '{}'.".format(dict_filename))
-      exit(1)
-  else:
-    dictfile = as_file(files("cmu_phonetic_dictionary").joinpath("cmudict-0.7b"))
-    encoding = 'latin-1'
+  if dict_filename == None:
+    dict_filename = files("cmu_phonetic_dictionary").joinpath("cmudict-0.7b")
+    encoding = "latin-1"
 
-  for number in args['<number>']:
-    print("{}:".format(number))
-    for phrase in phrases(dictfile, number, args['--max-words'],
-        args['--min-words'], blacklist, encoding=encoding):
-      print("  " + phrase.strip())
+  try:
+    with open(dict_filename, "r", encoding=encoding) as dictfile:
+        for number in args['<number>']:
+            print("{}:".format(number))
+            for phrase in phrases(dictfile, number, args['--max-words'],
+                args['--min-words'], blacklist, encoding=encoding):
+              print("  " + phrase.strip())
+  except FileNotFoundError as e:
+        print("Give a phonetic dictionary formatted like CMUdict to the" \
+            " -d flag.")
+        print("No file at '{}'.".format(dict_filename))
+        exit(1)
+
 
 
 if __name__ == "__main__":
