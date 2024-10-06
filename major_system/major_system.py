@@ -107,7 +107,7 @@ def major_words(dictfile, number, blacklist=None, *, encoding='utf-8'):
 
   # If it's something that can only be iterated through once (like a file
   # pointer), reset to the beginning again
-  if isinstance(dictfile, collections.Iterator):
+  if isinstance(dictfile, collections.abc.Iterator):
     dictfile.seek(0)
 
   for line in dictfile:
