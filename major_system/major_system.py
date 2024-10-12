@@ -202,7 +202,7 @@ def partitions(arr, max_partitions=None, min_partitions=None):
 
 
 def main():
-  args = docopt(__doc__, version='2.1.0')
+  args = docopt(__doc__, version='2.2.0')
 
   if args['--cmudict']:
     import pkg_resources
