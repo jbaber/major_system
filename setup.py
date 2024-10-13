@@ -12,7 +12,7 @@ setup(
   package_data = {
     'major_system': ['cmu_phonetic_dictionary/cmudict-0.7b'],
   },
-  install_requires = ['docopt-ng'],
+  install_requires = ['docopt-ng', 'types-setuptools'],
   tests_require=['pytest'],
   entry_points = {
     'console_scripts': ['major_words=major_system.major_system:main'],
