@@ -240,11 +240,24 @@ def main():
         "cmu_phonetic_dictionary/cmudict-0.7b")
     encoding = 'latin-1'
 
+  everything = {}
   for number in args['<number>']:
-    print("{}:".format(number))
-    for phrase in phrases(dictfile, number, args['--max-words'],
-        args['--min-words'], blacklist, encoding=encoding):
-      print("  " + phrase.strip())
+    everything[number] = [
+      phrase.strip()
+      for phrase in phrases(
+        dictfile,
+        number,
+        args['--max-words'],
+        args['--min-words'],
+        blacklist,
+        encoding=encoding
+      )
+    ]
+
+    for number in everything:
+      print(f"{format(number)}:")
+      for phrase in everything[number]:
+        print(f"  {phrase}")
 
 
 if __name__ == "__main__":
