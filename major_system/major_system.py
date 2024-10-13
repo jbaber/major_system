@@ -4,6 +4,7 @@ import sys
 import re
 import itertools
 import collections
+from typing import Iterator
 
 __doc__ = """
 Usage: {0} [options] <number>...
@@ -135,18 +136,27 @@ def phrases_from_partition(dictfile, partition, blacklist=None, *,
     yield " ".join(tup)
 
 
-def phrases(dictfile, number, max_words=None, min_words=None,
-    blacklist=None, *, verbosity=2, encoding='utf-8'):
+def phrases(
+  dictfile,
+  number,
+  max_words=None,
+  min_words=None,
+  blacklist=None,
+  *,
+  encoding='utf-8'
+) -> tuple[tuple, Iterator[str]]:
   if blacklist == None:
     blacklist = []
   for partition in partitions(number, max_words, min_words):
-    if verbosity > 1:
-      for part in partition[:-1]:
-        print(part, end=", ")
-      print(partition[-1])
-    for phrase in phrases_from_partition(dictfile, partition, blacklist,
-        encoding=encoding):
-      yield phrase
+    yield (
+      partition,
+      phrases_from_partition(
+        dictfile,
+        partition,
+        blacklist,
+        encoding=encoding
+      )
+    )
 
 
 def ordered_tuples(tuple_length, num_elts):
@@ -159,7 +169,7 @@ def ordered_tuples(tuple_length, num_elts):
         yield tup + (i,)
 
 
-def partitions(arr, max_partitions=None, min_partitions=None):
+def partitions(arr, max_partitions=None, min_partitions=None) -> list[tuple]:
   arr = str(arr)
   has_max = False
   try:
@@ -204,6 +214,8 @@ def partitions(arr, max_partitions=None, min_partitions=None):
 def main():
   args = docopt(__doc__, version='2.2.0')
 
+  verbosity = 2
+
   if args['--cmudict']:
     import pkg_resources
     print(pkg_resources.resource_string("major_system",
@@ -242,22 +254,22 @@ def main():
 
   everything = {}
   for number in args['<number>']:
-    everything[number] = [
-      phrase.strip()
-      for phrase in phrases(
-        dictfile,
-        number,
-        args['--max-words'],
-        args['--min-words'],
-        blacklist,
-        encoding=encoding
-      )
-    ]
+    everything[number] = phrases(
+      dictfile,
+      number,
+      args['--max-words'],
+      args['--min-words'],
+      blacklist,
+      encoding=encoding
+    )
 
     for number in everything:
       print(f"{format(number)}:")
-      for phrase in everything[number]:
-        print(f"  {phrase}")
+      for partition, phrase_generator in everything[number]:
+        if verbosity > 1:
+          print(" " + ", ".join(partition) + ":")
+        for phrase in phrase_generator:
+          print(f"  {phrase}")
 
 
 if __name__ == "__main__":
