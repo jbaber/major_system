@@ -4,6 +4,7 @@ import sys
 import re
 import itertools
 import collections
+import json
 from typing import Iterator
 
 __doc__ = """
@@ -16,6 +17,7 @@ Usage: {0} [options] <number>...
 
 Options:
   -v, --version              Show version
+  -j, --jsonl                Output in JSON Lines format
   -M, --max-words=<number>   Maximum number of words to split into
                              [DEFAULT: 3]
   -m, --min-words=<number>   Minimum number of words to split into
@@ -263,13 +265,27 @@ def main():
       encoding=encoding
     )
 
-    for number in everything:
-      print(f"{format(number)}:")
-      for partition, phrase_generator in everything[number]:
-        if verbosity > 1:
-          print(" " + ", ".join(partition) + ":")
-        for phrase in phrase_generator:
-          print(f"  {phrase}")
+    if args["--jsonl"]:
+      for number in everything:
+        for partition, phrase_generator in everything[number]:
+          print(f'{{"number": {format(number)}, "partition": "[', end="")
+          print(", ".join(partition), end=']", ')
+          print('"phrases": [', end = "")
+          first_phrase = True
+          for phrase in phrase_generator:
+            if not first_phrase:
+              print(", ", end="")
+            print(json.dumps(phrase), end="")
+            first_phrase = False
+          print("]}")
+    else:
+      for number in everything:
+        print(f"{format(number)}:")
+        for partition, phrase_generator in everything[number]:
+          if verbosity > 1:
+            print(" " + ", ".join(partition) + ":")
+          for phrase in phrase_generator:
+            print(f"  {phrase}")
 
 
 if __name__ == "__main__":
