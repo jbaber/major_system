@@ -1,5 +1,6 @@
 from major_system import major_system as ms
 import pytest
+import pathlib
 
 @pytest.fixture
 def dictfile():
@@ -55,7 +56,8 @@ def test_partitions():
 
 
 def test_major_words(dictfile):
-  with open("cmu_phonetic_dictionary/cmudict-0.7b", "r", encoding="latin-1") as f:
+  curdir = pathlib.Path(__file__).parent
+  with open(str(curdir / "cmu_phonetic_dictionary/cmudict-0.7b"), "r", encoding="latin-1") as f:
     expected = [
       'AD-HOC', 'ADACHI', 'ADAK', 'ADWEEK', 'ATCO', 'ATEK', 'ATICO',
       'ATTACK', 'ATTIC', 'ATTICA', 'DAC', 'DACHAU', 'DACK', 'DAG',
