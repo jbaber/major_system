@@ -27,7 +27,7 @@ build-job:
   image: python:3.11
   script:
     - python -m pip install -U build
-    - cd major_system && python -m build
+    - python -m build
   artifacts:
     paths:
       - "major_system/dist/"
