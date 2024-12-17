@@ -214,7 +214,7 @@ def partitions(arr, max_partitions=None, min_partitions=None) -> list[tuple]:
 
 
 def main():
-  args = docopt(__doc__, version='2.3.0')
+  args = docopt(__doc__, version='2.3.1')
 
   verbosity = 2
 
