@@ -1,12 +1,22 @@
 Python libraries and scripts for converting numbers using the [Mnemonic Major System].
 
-After
+INSTALL
+-------
 
-    pip install .
+    pip install major_system
 
-`major_words --help` will show the flags to the executable script
-`major_words`.
 
+USAGE
+-----
+
+    major_words --help
+
+
+RELEASE
+-------
+
+Released by gitlab CI whenever a commit to master is made at [the gitlab repository].
 
 
 [Mnemonic Major System]: https://en.wikipedia.org/wiki/Mnemonic_major_system
+[the gitlab repository]: https://gitlab.com/jbaber/major_system
