@@ -30,7 +30,7 @@ build-job:
     - cd major_system && python -m build
   artifacts:
     paths:
-      - "major_system/major_system/dist/"
+      - "major_system/dist/"
 
 publish-job:
   stage: deploy
