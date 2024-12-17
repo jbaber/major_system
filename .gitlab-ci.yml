@@ -27,10 +27,10 @@ build-job:
   image: python:3.11
   script:
     - python -m pip install -U build
-    - python -m build
+    - cd major_system && python -m build
   artifacts:
     paths:
-      - "major_system/dist/"
+      - "major_system/major_system/dist/"
 
 publish-job:
   stage: deploy
