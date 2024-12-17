@@ -31,7 +31,7 @@ build-job:
     - python -m build
   artifacts:
     paths:
-      - "major_system/dist/"
+      - "dist/"
 
 publish-job:
   stage: deploy
@@ -55,4 +55,4 @@ publish-job:
 
     # Upload to PyPI authenticating via the newly-minted token
     # Add "--repository testpypi" if uploading to TestPyPI
-    - twine upload -u __token__ -p "${api_token}" major_system/dist/*
+    - twine upload -u __token__ -p "${api_token}" dist/*
